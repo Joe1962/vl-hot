@@ -4,5 +4,5 @@ Working specifications of vl-hot:
 - The mount base directory will be "/mnt/vl-hot/".
 - Each drive will have a "sd?" directory (where "?" represents a letter of the alphabet).
 - Each mounted partition will have a "vol#" directory (where "#" represents a number) within the drive directory. An exception to this rule is in the case of non-MBR devices, where there is no partition table.
-- Desktop icons are dynamically created/deleted (currently only for KDE) and these have an unmount options in the context (right-click) menu. There is a conventional unmount (should be used normally) as well as options for unmount with signalling to the process that is holding open the mount and unmount with killing of said process (the last two should be tried in that order, when the normal unmount fails).
+- Desktop icons are dynamically created/deleted (currently only for KDE) and these have unmount options in the context (right-click) menu. There is a conventional unmount (should be used normally) as well as options for unmount with signalling to the process that is holding open the mount and unmount with killing of said process (the last two should be tried in that order, when the normal unmount fails).
 - The unmount operation has completed succesfully once the desktop icon dissapears.
