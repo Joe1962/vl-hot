@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# (c) Vector Linux, 2005
+# Part of VL-Hot by Joe1962
+# Licensed under the GPL v2
+#
+# vl-hot release 2.0.0
+#
+
+#
+# call: vlh-umount -option
+# -s = sighup
+# -k = sigkill
+#
+
+
+# Include configuration file:
+. /etc/udev/vl-hot.conf
+
+# Include support functions file:
+. /lib/udev/vl-hot_functions
+
+
+#**************************************************************************
+# MAIN:
+#**************************************************************************
+feedback "Starting vlh-umount..."
+
+OPTION=$1
+
+case $OPTION in
+
+	-h)
+		# vlh-umount -h:
+		echo
+		echo "   vlh-umount = normal unmount"
+		echo "   vlh-umount -s = unmount with sighup"
+		echo "   vlh-umount -k = unmount with sigkill"
+		echo "   vlh-umount -h = this help"
+		echo
+		feedback "Finishing vlh-umount..."
+		exit
+	;;
+
+esac
+
+DIRS="$MOUNT_PATH/*"
+for I in $DIRS ; do
+	if [ -d "$I" ] ; then
+		# Get device name:
+		DEVNAME=`mount | grep $I | awk ' $I { print $1 }'`
+
+		case $OPTION in
+
+			-s)
+				# vlh-umount -s:
+				echo "Unmounting $DEVNAME from $I (with sighup)" 
+				/lib/udev/vl-hot_umount ${DEVNAME##*/} $I script unmountsignal
+			;;
+		
+			-k)
+				# vlh-umount -k:
+				echo "Unmounting $DEVNAME from $I (with sigkill)" 
+				/lib/udev/vl-hot_umount ${DEVNAME##*/} $I script unmountkill
+			;;
+		
+		   *)
+				# vlh-umount:
+				echo "Unmounting $DEVNAME from $I"
+				/lib/udev/vl-hot_umount ${DEVNAME##*/} $I script unmount
+			;;
+		
+		esac
+	else
+		# Nothing to unmount:
+		echo "Nothing to unmount..."
+	fi
+done
+
+feedback "Finishing vlh-umount..."
+#**************************************************************************

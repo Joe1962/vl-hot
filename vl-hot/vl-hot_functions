@@ -1,0 +1,249 @@
+#!/bin/bash
+#
+# (c) Vector Linux, 2005
+# Part of VL-Hot by Joe1962
+# Licensed under the GPL v2
+#
+# vl-hot release 2.0.0
+#
+
+
+#**************************************************************************
+# DECLARES and ASSIGNS:
+#**************************************************************************
+
+# Paths to programs:
+DISKTYPE=disktype
+SGMAP=sg_map
+FDISK=/sbin/fdisk
+SUDO=/usr/bin/sudo
+LOCKFILE=/usr/bin/lockfile
+
+# VL-Hot paths:
+RUN_DIR=/var/run
+LOG_DIR=/var/log
+HOTLINKS_PATH="/dev/vl-hot"
+
+# Some necessary names:
+DESKTOPDIR="Desktop"
+
+# Mount options:
+USB_USER=root
+#USB_USER=`who|grep :0|cut -d " " -f1`
+USB_GROUP=users
+USB_UMASK=0111
+USB_DMASK=0000
+
+# Unmount options:
+#UMOUNT_OPTIONS="-lf"
+UMOUNT_OPTIONS="-f"
+
+# Verbosity:
+LOG_POPUP_LEVEL=emerg
+FACILITY=local5
+DEBUG=1
+
+# Notify stuff:
+NOT_ICON=$ICON_NOTIFY
+
+id=$(basename $0)
+
+#**************************************************************************
+# FUNCTIONS:
+#**************************************************************************
+function feedback {
+if [ "$DEBUG = 1" ]
+then
+	logger -t $id -p $FACILITY.info -- "$@"
+fi
+}
+
+function debugMessage {
+	logger -t $id -p $FACILITY.debug -- "$@"
+}
+
+function errorExit {
+	logger -t $id -p $FACILITY.$LOG_POPUP_LEVEL -- "$@"
+	rm -f "$VAR_DIR/vl_hot.lock"
+	exit 1
+}
+
+function fnotify {
+	if [ -x "/usr/bin/notify-send" ]
+	then
+		USER=`who|grep :0 -m 1|cut -d " " -f1`
+		if [ $USER != "" ]
+		then
+			exec $SUDO -u $USER /usr/bin/notify-send -u $NOT_CRIT -t $NOT_TIME -i $NOT_ICON -c $NOT_CATG "$NOT_SUMM" "$NOT_MESS" &
+		fi
+	fi
+	if [ $SND_ENABLE = "1" ]
+	then
+		play $NOT_SND
+	fi
+}
+
+function is_excluded() {
+   for EXCLUDED in ${EXCLUDED_DEVICE} ; do
+      if [[ $1 == $EXCLUDED ]]; then
+         for INCLUDED in ${INCLUDED_DEVICE} ; do
+            if [[ $1 == $INCLUDED ]]; then
+         return 1
+      fi
+   done
+   return 0
+      fi
+   done
+   return 1
+}
+
+function chooseMountOptions {
+	case $FSTYPE in 
+	Ext2)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC"
+		FSMOUNTTYPEARG="ext2"
+	;;
+	Ext3)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC"
+		FSMOUNTTYPEARG="ext3"
+	;;
+	ReiserFS)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC"
+		FSMOUNTTYPEARG="reiserfs"
+	;;
+	NTFS)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC,uid=$USB_USER,gid=$USB_GROUP,fmask=$USB_UMASK,dmask=$USB_DMASK,nls=$NTFSNLS,$NTFSIO"
+		FSMOUNTTYPEARG="ntfs"
+	;;
+	FAT12)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC,uid=$USB_USER,gid=$USB_GROUP,fmask=$USB_UMASK,dmask=$USB_DMASK,quiet"
+		FSMOUNTTYPEARG="msdos"
+	;;
+	FAT16)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC,uid=$USB_USER,gid=$USB_GROUP,fmask=$USB_UMASK,dmask=$USB_DMASK,quiet,codepage=$FATCODEPAGE,iocharset=$FATIOCHARSET$FATUTF8"
+		FSMOUNTTYPEARG="vfat"
+	;;
+	FAT32)
+		MOUNT_OPTIONS="-o user,$MOUNTSYNC,uid=$USB_USER,gid=$USB_GROUP,fmask=$USB_UMASK,dmask=$USB_DMASK,quiet,shortname=mixed,codepage=$FATCODEPAGE,iocharset=$FATIOCHARSET$FATUTF8"
+		FSMOUNTTYPEARG="vfat"
+	;;
+   *)
+		MOUNT_OPTIONS="UNKNOWN"
+		FSMOUNTTYPEARG="auto"
+	;;
+	esac
+}
+
+function delDesktopIcon {
+	DESKTOPNAME=`basename $UMOUNTPOINT`
+	local DESKTOPFILE="vl-hot-$DEVNAME.desktop"
+	local DESKTOPFILEU="vl-hot-$DEVNAME-U.desktop"
+
+	[ $DIAG = "1" ] && feedback "Deleting desktop file $DESKTOPFILE"
+
+	# Remove temp Desktop icon file from every user Desktop:
+	USERS=`ls /home | grep -v backupsys | grep -v ftp`
+	for I in $USERS; do
+		# Check for "Desktop" dir:
+		if [ -d /home/$I/Desktop ]
+		then
+			rm -f /home/$I/Desktop/$DESKTOPFILE
+			rm -f /home/$I/Desktop/$DESKTOPFILEU
+		fi
+	done
+	if [ -d /root/Desktop ]
+	then
+		rm -f /root/Desktop/$DESKTOPFILE
+		rm -f /root/Desktop/$DESKTOPFILEU
+	fi
+}
+
+function showDesktopIcon {
+	DESKTOPNAME=`basename $MOUNTPOINT`
+	local DESKTOPFILE="vl-hot-$DEVNAME.desktop"
+	local DESKTOPFILEU="vl-hot-$DEVNAME-U.desktop"
+
+	# Remove temp Desktop icon file if left over:
+	if [ -f /tmp/$DESKTOPFILE ]
+	then
+		rm -f /tmp/$DESKTOPFILE
+	fi
+	if [ -f /tmp/$DESKTOPFILEU ]
+	then
+		rm -f /tmp/$DESKTOPFILEU
+	fi
+
+	[ $DIAG = "1" ] && feedback "Showing desktop file $DESKTOPFILE"
+
+	cat > "/tmp/$DESKTOPFILE" <<-EOF
+[Desktop Entry]
+Version=1.0
+Type=Link
+URL=file://$MOUNTPOINT
+#Type=Application
+Name=$DESKTOPNAME
+GenericName=vl-hot mounted drive
+Comment=This drive was mounted by vl-hot...
+Encoding=UTF-8
+Icon=$ICON
+X-KDE-Priority=TopLevel
+Actions=Unmount;UnmountSignal;UnmountKill;
+
+[Desktop Action Unmount]
+Exec=/lib/udev/vl-hot_umount $DEVNAME $MOUNTPOINT desktopicon unmount
+Name=Unmount
+
+[Desktop Action UnmountSignal]
+Exec=/lib/udev/vl-hot_umount $DEVNAME $MOUNTPOINT desktopicon unmountsignal
+Name=Unmount (signal processes)
+
+[Desktop Action UnmountKill]
+Exec=/lib/udev/vl-hot_umount $DEVNAME $MOUNTPOINT desktopicon unmountkill
+Name=Unmount (kill processes)
+
+EOF
+	
+	# Set Desktop icon file owner and access permissions:
+	chown $USB_USER.$USB_GROUP $DESKTOPFILE
+	chmod u+w $DESKTOPFILE
+
+	cat > "/tmp/$DESKTOPFILEU" <<-EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Unmount $DESKTOPNAME
+Encoding=UTF-8
+Exec=/lib/udev/vl-hot_umount $DEVNAME $MOUNTPOINT desktopicon unmount
+Icon=$ICON_UNMOUNT
+NotShowIn=KDE;
+#OnlyShowIn=XFCE;
+
+EOF
+	
+	# Set Desktop icon file owner and access permissions:
+	chown $USB_USER:$USB_GROUP $DESKTOPFILEU
+	chmod u+w $DESKTOPFILEU
+
+	# Copy temp Desktop icon file to every user Desktop:
+	users=`ls /home | grep -v backupsys | grep -v ftp`
+	for i in $users; do
+		# Check for "Desktop" dir:
+		if [ -d /home/$i/Desktop ]
+		then
+			# Copy Desktop icon file to this user's Desktop:
+			cp /tmp/$DESKTOPFILE /home/$i/Desktop/$DESKTOPFILE
+			cp /tmp/$DESKTOPFILEU /home/$i/Desktop/$DESKTOPFILEU
+		fi
+	done
+	# Copy Desktop icon file to root Desktop:
+	if [ -d /root/Desktop ]
+	then
+		cp /tmp/$DESKTOPFILE /root/Desktop/$DESKTOPFILE
+		cp /tmp/$DESKTOPFILEU /root/Desktop/$DESKTOPFILEU
+	fi
+	# Remove temp Desktop icon file:
+	rm -f /tmp/$DESKTOPFILE
+	rm -f /tmp/$DESKTOPFILEU
+
+}
+

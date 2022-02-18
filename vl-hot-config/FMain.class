@@ -1,0 +1,639 @@
+' Gambas class file
+
+PUBLIC FATcodepage AS String
+PUBLIC FATcharset AS String
+PUBLIC NTFSnls AS String
+PUBLIC retProc AS String
+
+
+PUBLIC SUB Form_Open()
+ME.Title = ME.Title & " " & Application.Version
+ME.Center
+ReadCharsets
+ReadConf
+IF txtCustomMountPoints.Enabled = TRUE THEN
+   butNamesRestore_Click
+ENDIF
+butExit.SetFocus
+END
+
+PUBLIC SUB ReadConf()   ' read config file:
+DIM sTemp AS String
+DIM pos1 AS Integer
+DIM pos2 AS Integer
+DIM looper AS Integer
+
+Global.reading = TRUE
+
+' get VL-Hot version:
+txtconfver.Text = "vl-hot.conf version: " & Global.ReadIni("RELEASE", "UNKNOWN")
+
+' GENERAL TAB:
+' get mount base path:
+txtMOUNTPATH.Text = Global.ReadIni("MOUNT_PATH", "/mnt/vl-hot")
+' get desktop icons file path:
+txtICON.Text = Global.ReadIni("ICON", "/usr/share/vl-hot/vl-hot.png")
+txtUICON.Text = Global.ReadIni("ICON_UNMOUNT", "/usr/share/vl-hot/vl-hot_unmount.png")
+' get sound files path:
+txtSuccess.Text = Global.ReadIni("SND_SUCCESS", "/usr/share/vl-hot/success.ogg")
+txtError.Text = Global.ReadIni("SND_ERROR", "/usr/share/vl-hot/error.ogg")
+' check for "Sounds enabled" in Notification options:
+sTemp = Global.ReadIni("SND_ENABLE", "1")
+IF sTemp = "1" THEN
+   chkSounds.Value = TRUE
+ELSE
+   chkSounds.Value = FALSE
+ENDIF
+' check for verbosity:
+IF Global.ReadIni("DIAG", 1) = 0 THEN
+   chkVerbose.Value = FALSE
+ELSE
+   chkVerbose.Value = TRUE
+ENDIF
+' New desktop-icon/filemanager stuff:
+IF Global.ReadIni("ICON_SHOW", "1") = 1 THEN
+   rbtDesktopIcon.Value = TRUE
+   rbtFileManager.Value = FALSE
+ELSE
+   rbtDesktopIcon.Value = FALSE
+   rbtFileManager.Value = TRUE
+ENDIF
+rbtDesktopIcon.Tag = rbtDesktopIcon.Value
+rbtFileManager.Tag = rbtFileManager.Value
+txtFM.Text = Global.ReadIni("FILE_MANAGER", "DEFAULT")
+
+' MOUNT TAB:
+' get excluded devices:
+txtExclude.Text = Global.ReadIni("EXCLUDED_DEVICE", "")
+' get included devices:
+txtInclude.Text = Global.ReadIni("INCLUDED_DEVICE", "")
+' check for "noatime" in mount sync options:
+sTemp = Global.ReadIni("MOUNTSYNC", "noatime")
+pos1 = InStr(sTemp, "noatime")
+IF pos1 > 0 THEN
+   noatime.Value = TRUE
+ELSE
+   noatime.Value = FALSE
+ENDIF
+' check for "exec" in mount sync options:
+pos1 = InStr(sTemp, "exec")
+IF pos1 > 0 THEN
+   exec.Value = TRUE
+ELSE
+   exec.Value = FALSE
+ENDIF
+' check for "dirsync" in mount sync options:
+pos1 = InStr(sTemp, "dirsync")
+IF pos1 > 0 THEN
+   dirsync.Value = TRUE
+ELSE
+   dirsync.Value = FALSE
+ENDIF
+' check for "sync" in mount sync options (beware of "dirsync"):
+pos2 = InStr(sTemp, "sync")
+IF pos2 > 0 THEN
+   IF pos2 = pos1 + 3 THEN
+      pos1 = InStr(sTemp, "sync", pos2 + 1)
+      IF pos1 > 0 THEN
+         sync.Value = TRUE
+      ELSE
+         sync.Value = FALSE
+      ENDIF
+   ELSE
+      sync.Value = TRUE
+   ENDIF
+ELSE
+   sync.Value = FALSE
+ENDIF
+
+' FAT/NTFS TAB:
+' FAT stuff:
+FATcodepage = Global.ReadIni("FATCODEPAGE", "437")
+'cmbFATcodepage.Index = cmbFATcodepage.Find(FATcodepage)
+FOR looper = 0 TO cmbFATcodepage.Count - 1
+   cmbFATcodepage.Index = looper
+   IF InStr(cmbFATcodepage.Text, FATcodepage) THEN BREAK
+NEXT
+cmbFATcodepage.Tag = cmbFATcodepage.Text
+FATcharset = Global.ReadIni("FATIOCHARSET", "iso8859-15")
+'cmbFATcharsets.Index = cmbFATcharsets.Find(FATcharset)
+FOR looper = 0 TO cmbFATcharsets.Count - 1
+   cmbFATcharsets.Index = looper
+   IF InStr(cmbFATcharsets.Text, FATcharset) THEN BREAK
+NEXT
+cmbFATcharsets.Tag = cmbFATcharsets.Text
+' NTFS stuff:
+NTFSnls = Global.ReadIni("NTFSNLS", "utf8")
+'cmbNTFSnls.Index = cmbNTFSnls.Find(NTFSnls)
+FOR looper = 0 TO cmbNTFSnls.Count - 1
+   cmbNTFSnls.Index = looper
+   IF InStr(cmbNTFSnls.Text, NTFSnls) THEN BREAK
+NEXT
+cmbNTFSnls.Tag = cmbNTFSnls.Text
+IF Global.ReadIni("NTFSIO", "ro") = "ro" THEN
+   NTFSro.Value = TRUE
+ELSE
+   NTFSro.Value = FALSE
+ENDIF
+IF Global.ReadIni("NTFS3G", 0) = 1 THEN
+   NTFS3G.Value = TRUE
+ELSE
+   NTFS3G.Value = FALSE
+ENDIF
+IF Global.ReadIni("NTFS3Gforce", 0) = 1 THEN
+   NTFS3Gforce.Value = TRUE
+ELSE
+   NTFS3Gforce.Value = FALSE
+ENDIF
+
+WAIT
+Global.reading = FALSE
+END
+
+PUBLIC SUB WriteConf()  ' write config file:
+DIM sTemp AS String
+
+' GENERAL TAB:
+' Mount base path:
+IF Global.ValidatePath(txtMOUNTPATH.Text) = TRUE THEN Global.WriteIni("MOUNT_PATH", txtMOUNTPATH.Text)
+' Desktop icon file path:
+IF Global.ValidateFile(txtICON.Text) = TRUE THEN Global.WriteIni("ICON", txtICON.Text)
+' Desktop unmount icon file path:
+IF Global.ValidateFile(txtUICON.Text) = TRUE THEN Global.WriteIni("ICON_UNMOUNT", txtUICON.Text)
+' Sounds:
+Global.WriteIni("SND_SUCCESS", txtSuccess.Text)
+Global.WriteIni("SND_ERROR", txtError.Text)
+IF chkSounds.Value = TRUE THEN
+   Global.WriteIni("SND_ENABLE", 1)
+ELSE
+   Global.WriteIni("SND_ENABLE", 0)
+ENDIF
+IF chkVerbose.Value = TRUE THEN
+   Global.WriteIni("DIAG", 1)
+ELSE
+   Global.WriteIni("DIAG", 0)
+ENDIF
+' New desktop-icon/filemanager stuff:
+IF rbtDesktopIcon.Value = TRUE THEN
+   Global.WriteIni("ICON_SHOW", 1)
+ELSE
+   Global.WriteIni("ICON_SHOW", 0)
+ENDIF
+Global.WriteIni("FILE_MANAGER", txtFM.text)
+
+' MOUNT TAB:
+' excluded devices:
+Global.WriteIni("EXCLUDED_DEVICE", txtExclude.Text)
+' included devices:
+Global.WriteIni("INCLUDED_DEVICE", txtInclude.Text)
+' mount options:
+IF noatime.Value = TRUE THEN sTemp = "noatime"
+IF exec.Value = TRUE THEN
+   IF sTemp = "" THEN
+      sTemp = sTemp & "exec"
+   ELSE
+      sTemp = sTemp & ",exec"
+   ENDIF
+ENDIF
+IF sync.Value = TRUE THEN
+   IF sTemp = "" THEN
+      sTemp = sTemp & "sync"
+   ELSE
+      sTemp = sTemp & ",sync"
+   ENDIF
+ENDIF
+IF dirsync.Value = TRUE THEN
+   IF sTemp = "" THEN
+      sTemp = sTemp & "dirsync"
+   ELSE
+      sTemp = sTemp & ",dirsync"
+   ENDIF
+ENDIF
+Global.WriteIni("MOUNTSYNC", sTemp)
+
+' FAT/NTFS TAB:
+' FAT stuff:
+Global.WriteIni("FATCODEPAGE", Split(cmbFATcodepage.Text, Space(1))[0])
+Global.WriteIni("FATIOCHARSET", Split(cmbFATcharsets.Text, Space(1))[0])
+Global.WriteIni("NTFSNLS", Split(cmbNTFSnls.Text, Space(1))[0])
+' NTFS stuff:
+IF NTFSro.Value = TRUE THEN
+   Global.WriteIni("NTFSIO", "ro")
+ELSE
+   Global.WriteIni("NTFSIO", "rw")
+ENDIF
+IF NTFS3G.Value = TRUE THEN
+   Global.WriteIni("NTFS3G", 1)
+ELSE
+   Global.WriteIni("NTFS3G", 0)
+ENDIF
+IF NTFS3Gforce.Value = TRUE THEN
+   Global.WriteIni("NTFS3Gforce", 1)
+ELSE
+   Global.WriteIni("NTFS3Gforce", 0)
+ENDIF
+END
+
+PUBLIC SUB ReadCharsets()
+' NOTE: the dimmed out parts were for charsets/nls as kernel modules, not built-in.
+' DIM MyProc AS Process
+' DIM sTemp AS String
+' DIM element AS String
+
+' MyProc = SHELL "uname -r" FOR READ AS "MyProc"
+' WHILE MyProc.State = MyProc.Running
+'   WAIT 0.1
+' WEND
+
+' sTemp = retProc
+
+' reset charset combo:
+cmbFATcodepage.Clear
+cmbFATcharsets.Clear
+cmbNTFSnls.Clear
+
+' FOR EACH element IN Dir(Global.PathNLSBase & sTemp & Global.PathNLSTail, "nls_*.ko")  '.Sort()
+'    ' remove file extension:
+'    element = Left$(element,Instr(element,".ko") - 1)
+'    IF Left$(element,6) = "nls_cp" THEN
+'       element = Mid$(element,7)
+'       cmbFATcodepage.Add(element)
+'    ELSE
+'       element = Mid$(element,5)
+'       cmbFATcharsets.Add(element)
+'       cmbNTFSnls.Add(element)
+'    ENDIF
+' NEXT
+
+'cmbFATcodepage.Add(element)
+cmbFATcodepage.Add("437 (United States, Canada)")
+cmbFATcodepage.Add("737 (Greek)")
+cmbFATcodepage.Add("775 (Baltic Rim)")
+cmbFATcodepage.Add("850 (Europe)")
+cmbFATcodepage.Add("852 (Central/Eastern Europe)")
+cmbFATcodepage.Add("855 (Cyrillic)")
+cmbFATcodepage.Add("857 (Turkish)")
+cmbFATcodepage.Add("860 (Portuguese)")
+cmbFATcodepage.Add("861 (Icelandic)")
+cmbFATcodepage.Add("862 (Hebrew)")
+cmbFATcodepage.Add("863 (Canadian French)")
+cmbFATcodepage.Add("864 (Arabic)")
+cmbFATcodepage.Add("865 (Norwegian, Danish)")
+cmbFATcodepage.Add("866 (Cyrillic/Russian)")
+cmbFATcodepage.Add("869 (Greek)")
+cmbFATcodepage.Add("874 (Thai)")
+cmbFATcodepage.Add("932")
+cmbFATcodepage.Add("936 (Simplified Chinese)")
+cmbFATcodepage.Add("949 (Korean)")
+cmbFATcodepage.Add("1250 (Slavic/Central European Languages)")
+cmbFATcodepage.Add("1251 (Bulgarian, Belarusian)")
+cmbFATcodepage.Add("1255 (Hebrew)")
+
+'cmbFATcharsets.Add(element)
+cmbFATcharsets.Add("ASCII (United States)")
+cmbFATcharsets.Add("iso8859-1 (Latin 1; Western European Languages)")
+cmbFATcharsets.Add("iso8859-2 (Latin 2; Slavic/Central European Languages)")
+cmbFATcharsets.Add("iso8859-3 (Latin 3; Esperanto, Galician, Maltese, Turkish)")
+cmbFATcharsets.Add("iso8859-4 (Latin 4; old Baltic charset)")
+cmbFATcharsets.Add("iso8859-5 (Cyrillic)")
+cmbFATcharsets.Add("iso8859-6 (Arabic)")
+cmbFATcharsets.Add("iso8859-7 (Modern Greek)")
+cmbFATcharsets.Add("iso8859-8 (Hebrew)")
+cmbFATcharsets.Add("iso8859-9 (Latin 5; Turkish)")
+cmbFATcharsets.Add("iso8859-13 (Latin 7; Baltic)")
+cmbFATcharsets.Add("iso8859-14 (Latin 8; Celtic)")
+cmbFATcharsets.Add("iso8859-15 (Latin 9; Western European Languages WITH Euro)")
+cmbFATcharsets.Add("GB2312 (Simplified Chinese)")
+cmbFATcharsets.Add("Big5 (Traditional Chinese)")
+cmbFATcharsets.Add("EUC-JP (Japanese)")
+cmbFATcharsets.Add("Shift-JIS (Japanese)")
+cmbFATcharsets.Add("EUC-KR (Korean)")
+cmbFATcharsets.Add("TIS-620 (Thai)")
+cmbFATcharsets.Add("KOI8_R (Russian)")
+cmbFATcharsets.Add("KOI8_U (Ukrainian, Belarusian)")
+cmbFATcharsets.Add("UTF-8")
+
+'cmbNTFSnls.Add(element)
+cmbNTFSnls.Add("ASCII (United States)")
+cmbNTFSnls.Add("iso8859-1 (Latin 1; Western European Languages)")
+cmbNTFSnls.Add("iso8859-2 (Latin 2; Slavic/Central European Languages)")
+cmbNTFSnls.Add("iso8859-3 (Latin 3; Esperanto, Galician, Maltese, Turkish)")
+cmbNTFSnls.Add("iso8859-4 (Latin 4; old Baltic charset)")
+cmbNTFSnls.Add("iso8859-5 (Cyrillic)")
+cmbNTFSnls.Add("iso8859-6 (Arabic)")
+cmbNTFSnls.Add("iso8859-7 (Modern Greek)")
+cmbNTFSnls.Add("iso8859-8 (Hebrew)")
+cmbNTFSnls.Add("iso8859-9 (Latin 5; Turkish)")
+cmbNTFSnls.Add("iso8859-13 (Latin 7; Baltic)")
+cmbNTFSnls.Add("iso8859-14 (Latin 8; Celtic)")
+cmbNTFSnls.Add("iso8859-15 (Latin 9; Western European Languages WITH Euro)")
+cmbNTFSnls.Add("GB2312 (Simplified Chinese)")
+cmbNTFSnls.Add("Big5 (Traditional Chinese)")
+cmbNTFSnls.Add("EUC-JP (Japanese)")
+cmbNTFSnls.Add("Shift-JIS (Japanese)")
+cmbNTFSnls.Add("EUC-KR (Korean)")
+cmbNTFSnls.Add("TIS-620 (Thai)")
+cmbNTFSnls.Add("KOI8_R (Russian)")
+cmbNTFSnls.Add("KOI8_U (Ukrainian, Belarusian)")
+cmbNTFSnls.Add("UTF-8")
+
+cmbFATcodepage.Index = 0
+cmbFATcharsets.Index = 0
+cmbNTFSnls.Index = 0
+END
+
+PUBLIC SUB butExit_Click()
+ME.close
+END
+
+PUBLIC SUB noatime_Click()
+Global.Changed
+END
+
+PUBLIC SUB exec_Click()
+Global.Changed
+END
+
+PUBLIC SUB sync_Click()
+IF Global.reading = FALSE THEN 
+   dirsync.Value = sync.Value
+ENDIF
+Global.Changed
+END
+
+PUBLIC SUB dirsync_Click()
+IF Global.reading = FALSE THEN 
+   sync.Value = dirsync.Value
+ENDIF
+Global.Changed
+END
+
+PUBLIC SUB butUndo_Click()
+FMain.butSave.Enabled = FALSE
+FMain.butUndo.Enabled = FALSE
+ReadConf
+END
+
+PUBLIC SUB butSave_Click()
+FMain.butSave.Enabled = FALSE
+FMain.butUndo.Enabled = FALSE
+WriteConf
+ReadConf
+END
+
+PUBLIC SUB Process_Read()
+DIM sLine AS String
+
+LINE INPUT #LAST, sLine
+retProc = sLine
+END
+
+PUBLIC SUB tbtMountbase_Click()
+IF IsDir(txtMOUNTPATH.Text) THEN
+   txtMOUNTPATH.text = Global.GetDir(txtMOUNTPATH.text)
+ELSE
+   txtMOUNTPATH.text = Global.GetDir("/mnt/vl-hot")
+ENDIF
+END
+
+PUBLIC SUB tbtIcon_Click()
+IF Exist(txtICON.Text) THEN
+   txtICON.Text = Global.GetFile(txtICON.Text, "icons")
+ELSE
+   txtICON.Text = Global.GetFile("/usr/share/pixmaps", "icons")
+ENDIF
+END
+
+PUBLIC SUB tbtUIcon_Click()
+IF Exist(txtUICON.Text) THEN
+   txtUICON.Text = Global.GetFile(txtUICON.Text, "icons")
+ELSE
+   txtUICON.Text = Global.GetFile("/usr/share/pixmaps", "icons")
+ENDIF
+END
+
+PUBLIC SUB tbtSuccess_Click()
+IF Exist(txtSuccess.Text) THEN
+   txtSuccess.Text = Global.GetFile(txtSuccess.Text, "sounds")
+ELSE
+   txtSuccess.Text = Global.GetFile("/usr/share/vl-hot/success.ogg", "sounds")
+ENDIF
+END
+
+PUBLIC SUB tbtError_Click()
+IF Exist(txtError.Text) THEN
+   txtError.Text = Global.GetFile(txtError.Text, "sounds")
+ELSE
+   txtError.Text = Global.GetFile("/usr/share/vl-hot/error.ogg", "sounds")
+ENDIF
+END
+
+PUBLIC SUB tbtFM_Click()
+IF txtFM.Text = "" THEN
+   txtFM.Text = Global.GetFile("/usr/bin/thunar", "exec")
+ELSE
+   IF UCase$(txtFM.Text) = "DEFAULT" THEN
+      txtFM.Text = Global.GetFile("/usr/bin/thunar", "exec")
+   ELSE
+      IF Exist(txtFM.Text) AND NOT IsDir(txtFM.Text) THEN
+         txtFM.Text = Global.GetFile(txtFM.Text, "exec")
+      ELSE
+         txtFM.Text = Global.GetFile("/usr/bin/thunar", "exec")
+      ENDIF
+   ENDIF
+ENDIF
+END
+
+PUBLIC SUB chkSounds_Click()
+IF chkSounds.Value = TRUE THEN
+   tbtSuccess.Enabled = TRUE
+   txtSuccess.Enabled = TRUE
+   tbtError.Enabled = TRUE
+   txtError.Enabled = TRUE
+ELSE
+   tbtSuccess.Enabled = FALSE
+   txtSuccess.Enabled = FALSE
+   tbtError.Enabled = FALSE
+   txtError.Enabled = FALSE
+ENDIF
+Global.Changed
+END
+
+PUBLIC SUB rbtNTFSperm_Click()
+IF NTFS3G.Enabled = TRUE AND NTFS3G.Value = TRUE THEN
+   NTFS3Gforce.Enabled = TRUE
+ELSE
+   NTFS3Gforce.Enabled = FALSE
+ENDIF
+Global.Changed
+END
+
+PUBLIC SUB butNamesRestore_Click()
+DIM hFile AS File
+DIM LineData AS String
+
+txtCustomMountPoints.Clear
+
+'OPEN "/home/joe1962/temp/vl-hot_names.conf" FOR READ AS #hFile
+OPEN "/etc/udev/vl-hot_names.conf" FOR READ AS #hFile
+
+WHILE NOT Eof(hFile)
+   LINE INPUT #hFile, LineData
+   txtCustomMountPoints.Text = txtCustomMountPoints.Text & LineData & gb.NewLine
+WEND
+
+CLOSE #hFile
+END
+
+PUBLIC SUB butNamesSave_Click()
+DIM hFile AS File
+DIM arrTemp AS String[]
+DIM index AS Integer
+
+arrTemp = Split(txtCustomMountPoints.Text, gb.NewLine)
+
+'OPEN "/home/joe1962/temp/vl-hot_names.conf" FOR CREATE AS #hFile
+OPEN "/etc/udev/vl-hot_names.conf" FOR CREATE AS #hFile
+
+FOR index = 0 TO arrTemp.Max
+   PRINT #hFile, arrTemp[index]
+NEXT
+
+CLOSE #hFile
+
+END
+
+PUBLIC SUB txtMOUNTPATH_Change()
+Global.Changed
+IF Global.ValidatePath(txtMOUNTPATH.Text) = FALSE THEN
+   txtMOUNTPATH.BackColor = Color.Red
+ELSE
+   txtMOUNTPATH.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtICON_Change()
+Global.Changed
+IF Global.ValidateFile(txtICON.Text) = FALSE THEN
+   txtICON.BackColor = Color.Red
+ELSE
+   txtICON.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtUICON_Change()
+Global.Changed
+IF Global.ValidateFile(txtUICON.Text) = FALSE THEN
+   txtUICON.BackColor = Color.Red
+ELSE
+   txtUICON.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtSuccess_Change()
+Global.Changed
+IF Global.ValidateFile(txtSuccess.Text) = FALSE THEN
+   txtSuccess.BackColor = Color.Red
+ELSE
+   txtSuccess.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtError_Change()
+Global.Changed
+IF Global.ValidateFile(txtError.Text) = FALSE THEN
+   txtError.BackColor = Color.Red
+ELSE
+   txtError.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtFM_Change()
+Global.Changed
+IF Global.ValidateFile(txtFM.Text) = FALSE AND UCase$(txtFM.Text) <> "DEFAULT" THEN
+   txtFM.BackColor = Color.Red
+ELSE
+   txtFM.BackColor = Color.Default
+ENDIF
+END
+
+PUBLIC SUB txtExclude_Change()
+Global.Changed
+END
+
+PUBLIC SUB txtInclude_Change()
+Global.Changed
+END
+
+PUBLIC SUB chkVerbose_Click()
+Global.Changed
+END
+
+PUBLIC SUB cmbFATcodepage_Click()
+IF cmbFATcodepage.Tag = cmbFATcodepage.Text THEN
+ELSE
+   cmbFATcodepage.Tag = cmbFATcodepage.Text
+   Global.Changed
+ENDIF
+END
+
+PUBLIC SUB cmbFATcharsets_Click()
+IF cmbFATcharsets.Tag = cmbFATcharsets.Text THEN
+ELSE
+   cmbFATcharsets.Tag = cmbFATcharsets.Text
+   Global.Changed
+ENDIF
+END
+
+PUBLIC SUB cmbNTFSnls_Click()
+IF cmbNTFSnls.Tag = cmbNTFSnls.Text THEN
+ELSE
+   cmbNTFSnls.Tag = cmbNTFSnls.Text
+   Global.Changed
+ENDIF
+END
+
+PUBLIC SUB NTFS3GForce_Click()
+Global.Changed
+END
+
+PUBLIC SUB rbtActionType_Click()
+IF rbtDesktopIcon.Tag = rbtDesktopIcon.value AND rbtFileManager.Tag = rbtFileManager.Value THEN
+ELSE
+   rbtDesktopIcon.Tag = rbtDesktopIcon.Value
+   rbtFileManager.Tag = rbtFileManager.Value
+   Global.Changed
+ENDIF
+END
+
+PUBLIC SUB txtMOUNTPATH_LostFocus()
+' Mount base path:
+IF Global.ValidatePath(txtMOUNTPATH.Text) = FALSE THEN ReadConf
+END
+
+PUBLIC SUB txtICON_LostFocus()
+' Desktop icon file path:
+IF Global.ValidateFile(txtICON.Text) = FALSE THEN ReadConf
+END
+
+PUBLIC SUB txtUICON_LostFocus()
+' Desktop unmount icon file path:
+IF Global.ValidateFile(txtUICON.Text) = FALSE THEN ReadConf
+END
+
+PUBLIC SUB txtSuccess_LostFocus()
+' unmount sound file path:
+IF Global.ValidateFile(txtSuccess.Text) = FALSE THEN ReadConf
+END
+
+PUBLIC SUB txtError_LostFocus()
+' error sound file path:
+IF Global.ValidateFile(txtError.Text) = FALSE THEN ReadConf
+END
+
+
+
+
+
+
+

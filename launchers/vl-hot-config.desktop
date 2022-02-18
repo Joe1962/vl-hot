@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Comment=
+DocPath=
+Exec=vl-hot-config.gambas
+Icon=/usr/share/pixmaps/vl-hot.png
+MimeType=
+MiniIcon=/usr/share/pixmaps/vl-hot.png
+Name=vl-hot-config
+GenericName=VL-Hot configuration
+NotShowIn=KDE;
+#OnlyShowIn=XFCE;GNOME;
+Terminal=false
+Type=Application
+Categories=Qt;System;

@@ -1,0 +1,25 @@
+' Gambas module file
+
+PUBLIC SUB Main()
+DIM MyProc AS Process
+DIM Ret AS String
+
+IF System.User.Id <> 0 THEN
+   EXEC ["which", "kdesu"] TO Ret
+   IF InStr(Ret, "kdesu") THEN
+      EXEC ["kdesu", Application.Path &/ "vl-hot-config.gambas"]
+   ELSE
+      EXEC ["which", "gksu"] TO Ret
+      IF InStr(Ret, "gksu") THEN
+         EXEC ["gksu", Application.Path &/ "vl-hot-config.gambas"]
+      ELSE
+         PRINT "No kdesu or gksu available (vl-hot-config needs to run as root)..."
+      ENDIF
+   ENDIF
+   QUIT
+ENDIF
+
+Global.reading = TRUE
+FMain.Show
+
+END

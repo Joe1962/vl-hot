@@ -1,0 +1,361 @@
+# Gambas Form File 2.0
+
+{ Form Form
+  MoveScaled(45.7143,53.1429,67,44)
+  Text = ("vl-hot-config")
+  Icon = Picture["vl_hot.png"]
+  Border = Window.Fixed
+  { TabStrip1 TabStrip
+    MoveScaled(0.4286,1,66,39)
+    Font = Font["Luxi Sans,10"]
+    Count = 3
+    Index = 0
+    Text = ("General")
+    { Frame3 Frame
+      MoveScaled(0.1429,0,65,27)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Paths:")
+      { Label2 Label
+        MoveScaled(1,3,16,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("Base path:")
+        Alignment = Align.Right
+      }
+      { txtMOUNTPATH TextBox
+        MoveScaled(17,3,44,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Base path for VL-Hot mounted drives and partitions.")
+        Text = ("")
+      }
+      { Label3 Label
+        MoveScaled(1,7,16,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("Mount Icon:")
+        Alignment = Align.Right
+      }
+      { txtICON TextBox
+        MoveScaled(17,7,44,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Path to file to be used as desktop icon for VL-Hot mounted drive.")
+        Text = ("")
+      }
+      { tbtMountbase ToolButton
+        MoveScaled(61,3,3,3)
+        ToolTip = ("Select directory.")
+        Text = ("")
+        Picture = Picture["folder.png"]
+        Border = True
+      }
+      { tbtIcon ToolButton
+        MoveScaled(61,7,3,3)
+        ToolTip = ("Select file.")
+        Text = ("")
+        Picture = Picture["folder.png"]
+        Border = True
+      }
+      { Label10 Label
+        MoveScaled(1,11,16,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("Unmount Icon:")
+        Alignment = Align.Right
+      }
+      { txtUICON TextBox
+        MoveScaled(17,11,44,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Path to file to be used as unmount icon for VL-Hot mounted drive.")
+        Text = ("")
+      }
+      { tbtUIcon ToolButton
+        MoveScaled(61,11,3,3)
+        ToolTip = ("Select file.")
+        Text = ("")
+        Picture = Picture["folder.png"]
+        Border = True
+      }
+      { Label11 Label
+        MoveScaled(1,23,16,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("File manager:")
+        Alignment = Align.Right
+      }
+      { txtFM TextBox
+        MoveScaled(17,23,44,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("File manager to use for browsing the drive on mount.\nType \"DEFAULT\" to use environment defined file manager.")
+        Text = ("DEFAULT")
+      }
+      { tbtFM ToolButton
+        MoveScaled(61,23,3,3)
+        ToolTip = ("Select file.")
+        Text = ("")
+        Picture = Picture["folder.png"]
+        Border = True
+      }
+    }
+    { Label8 Label
+      MoveScaled(1,15,16,3)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Unmount sound:")
+      Alignment = Align.Right
+    }
+    { txtSuccess TextBox
+      MoveScaled(17,15,44,3)
+      Font = Font["Luxi Sans,10"]
+      ToolTip = ("Successful unmount notification sound file.")
+      Text = ("")
+    }
+    { tbtSuccess ToolButton
+      MoveScaled(61,15,3,3)
+      ToolTip = ("Select file.")
+      Text = ("")
+      Picture = Picture["folder.png"]
+      Border = True
+    }
+    { Label9 Label
+      MoveScaled(1,19,16,3)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Error sound:")
+      Alignment = Align.Right
+    }
+    { txtError TextBox
+      MoveScaled(17,19,44,3)
+      Font = Font["Luxi Sans,10"]
+      ToolTip = ("Unmount error notification sound file.")
+      Text = ("")
+    }
+    { tbtError ToolButton
+      MoveScaled(61,19,3,3)
+      ToolTip = ("Select file.")
+      Text = ("")
+      Picture = Picture["folder.png"]
+      Border = True
+    }
+    { Frame9 Frame
+      MoveScaled(0,27,26,7)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Options:")
+      { chkSounds CheckBox
+        MoveScaled(2,3,11,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Enable / disable sound notifications.")
+        Text = ("sounds")
+      }
+      { chkVerbose CheckBox
+        MoveScaled(14,3,11,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Enable / disable sound notifications.")
+        Text = ("verbose")
+      }
+    }
+    { Frame8 Frame
+      MoveScaled(27,27,38,7)
+      Text = ("Action type:")
+      { rbtDesktopIcon RadioButton rbtActionType
+        Name = "rbtDesktopIcon"
+        MoveScaled(2,3,17,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("More VL-Hot events will show in /var/log/messages.\nUseful for debugging purposes.")
+        Text = ("Desktop icon")
+        Value = True
+      }
+      { rbtFileManager RadioButton rbtActionType
+        Name = "rbtFileManager"
+        MoveScaled(20,3,17,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("More VL-Hot events will show in /var/log/messages.\nUseful for debugging purposes.")
+        Text = ("File manager")
+      }
+    }
+    Index = 1
+    Text = ("Mount")
+    { Frame4 Frame
+      MoveScaled(0.1429,11,65,7)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Options:")
+      { noatime CheckBox
+        MoveScaled(2,3,11,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Do not update inode access times.\nDefault ON for faster access and saving writes to flash memory.")
+        Text = ("noatime")
+      }
+      { exec CheckBox
+        MoveScaled(14,3,8,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Allow execution of binaries and scripts on the mounted device.\nDefault OFF for security reasons.")
+        Text = ("exec")
+      }
+      { sync CheckBox
+        MoveScaled(23,3,8,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("All  I/O  to  the file system should be done synchronously.\nDefault OFF due to extremely slow write speeds.\n(Not valid for all file systems).")
+        Text = ("sync")
+      }
+      { dirsync CheckBox
+        MoveScaled(32,3,11,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("All directory updates within the file system should be done synchronously.\nDefault OFF due to extremely slow write speeds.")
+        Text = ("dirsync")
+      }
+    }
+    { Frame7 Frame
+      MoveScaled(0.1429,0,65,11)
+      Font = Font["Luxi Sans,10"]
+      Text = ("Device selectivity:")
+      { Label6 Label
+        MoveScaled(1,3,12,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("Exclude:")
+        Alignment = Align.Right
+      }
+      { txtExclude TextBox
+        MoveScaled(13,3,51,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Devices that should not be mounted by VL-Hot.\nEnter a space delimited list. Example: sda* sdb1 sdc2")
+        Text = ("")
+      }
+      { Label7 Label
+        MoveScaled(1,7,12,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("Include:")
+        Alignment = Align.Right
+      }
+      { txtInclude TextBox
+        MoveScaled(13,7,51,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Devices that must be mounted by VL-Hot even if positive for excluded list.\nEnter a space delimited list. Example: sda* sdb1 sdc2")
+        Text = ("")
+      }
+    }
+    { Frame11 Frame
+      MoveScaled(0,18,52,16)
+      Text = ("Custom mountpoints:")
+      { txtCustomMountPoints TextArea
+        MoveScaled(0.1429,2.7143,51,13)
+        ToolTip = ("Custom mountpoints editor.")
+        Text = ("")
+        Border = False
+      }
+    }
+    { Frame12 Frame
+      MoveScaled(53,18,12,16)
+      Text = ("Actions:")
+      { butNamesRestore Button
+        MoveScaled(1,10,10,5)
+        ToolTip = ("Restore saved configuration from /etc/udev/vl-hot_names.conf")
+        Text = ("Restore")
+      }
+      { butNamesSave Button
+        MoveScaled(1,4,10,5)
+        ToolTip = ("Save configuration changes to /etc/udev/vl-hot_names.conf")
+        Text = ("Save")
+      }
+    }
+    Index = 2
+    Text = ("FAT/NTFS")
+    { Frame1 Frame
+      MoveScaled(0.1429,0,65,11)
+      Font = Font["Luxi Sans,10"]
+      Text = ("FAT Translation")
+      { Label1 Label
+        MoveScaled(1,3,12,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("codepage:")
+        Alignment = Align.Right
+      }
+      { cmbFATcodepage ComboBox
+        MoveScaled(13,3,51,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Sets the codepage for converting to shortname characters\non FAT and VFAT filesystems.\nBy default, codepage 437 is used.")
+        Text = (" ")
+        ReadOnly = True
+      }
+      { Label4 Label
+        MoveScaled(1,7,12,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("charset:")
+        Alignment = Align.Right
+      }
+      { cmbFATcharsets ComboBox
+        MoveScaled(13,7,51,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Character set to use for converting between 8 bit characters and 16 bit\nUnicode characters.  Long filenames are stored on disk in Unicode format.\nThe default is iso8859-15.")
+        Text = (" ")
+        ReadOnly = True
+      }
+    }
+    { Frame5 Frame
+      MoveScaled(0,11,65,7)
+      Font = Font["Luxi Sans,10"]
+      Text = ("NTFS Translation")
+      { Label5 Label
+        MoveScaled(1,3,12,3)
+        Font = Font["Luxi Sans,10"]
+        Text = ("charset/nls:")
+        Alignment = Align.Right
+      }
+      { cmbNTFSnls ComboBox
+        MoveScaled(13,3,51,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Character set to use when returning file names.  Unlike VFAT,\nNTFS suppresses names that contain unconvertible characters.")
+        Text = (" ")
+        ReadOnly = True
+        List = [("iso8859-15")]
+      }
+    }
+    { Frame6 Frame
+      MoveScaled(0,18,42,7)
+      Font = Font["Luxi Sans,10"]
+      Text = ("NTFS write permission:")
+      { NTFSro RadioButton rbtNTFSperm
+        Name = "NTFSro"
+        MoveScaled(2,3,19,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Mount NTFS partitions for read-only access.")
+        Text = ("Kernel (RO)")
+      }
+      { NTFS3G RadioButton rbtNTFSperm
+        Name = "NTFS3G"
+        MoveScaled(22,3,19,3)
+        Font = Font["Luxi Sans,10"]
+        ToolTip = ("Use NTFS-3G to mount NTFS partitions for read-write access.")
+        Text = ("NTFS-3G (RW)")
+      }
+    }
+    { Frame10 Frame
+      MoveScaled(43,18,22,7)
+      Text = ("NTFS3G options:")
+      { NTFS3GForce CheckBox
+        MoveScaled(2,3,8,3)
+        Enabled = False
+        ToolTip = ("Force NTFS-3G to mount NTFS partitions if marked \"dirty\" by Windows.")
+        Text = ("Forced")
+      }
+    }
+    Index = 0
+  }
+  { txtconfver Label
+    MoveScaled(2,40,37,4)
+    Font = Font["Luxi Sans,10"]
+    Text = ("vl-hot.conf version: ")
+  }
+  { butUndo Button
+    MoveScaled(40,40,8,4)
+    Enabled = False
+    Font = Font["Luxi Sans,10"]
+    ToolTip = ("Reload configuration from disk, loosing unwritten changes.")
+    Text = ("Undo")
+  }
+  { butSave Button
+    MoveScaled(49,40,8,4)
+    Enabled = False
+    Font = Font["Luxi Sans,10"]
+    ToolTip = ("Writes configuration changes to disk.")
+    Text = ("Save")
+  }
+  { butExit Button
+    MoveScaled(58,40,8,4)
+    Font = Font["Luxi Sans,10"]
+    Text = ("Exit")
+    Cancel = True
+  }
+}

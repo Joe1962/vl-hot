@@ -1,0 +1,17 @@
+# (c) Vector Linux, 2005
+# Joe1962's udev rules for VL-Hot
+#
+# (c) Vector Linux, 2005
+# Part of VL-Hot by Joe1962
+# Licensed under the GPL v2
+#
+# vl-hot release 2.0.0
+#
+
+# No more hotplug ;)
+
+SUBSYSTEM=="block", ACTION=="add", BUS=="usb", NAME="%k", SYMLINK="vl-hot/%k", ENV{VLHOT}="%p", RUN+="/lib/udev/vl-hot_mount %k udev"
+SUBSYSTEM=="block", ACTION=="add", BUS=="pcmcia", NAME="%k", SYMLINK="vl-hot/%k", ENV{VLHOT}="%p", RUN+="/lib/udev/vl-hot_mount %k udev"
+SUBSYSTEM=="block", ACTION=="add", BUS=="ieee1394", NAME="%k", SYMLINK="vl-hot/%k", ENV{VLHOT}="%p", RUN+="/lib/udev/vl-hot_mount %k udev"
+SUBSYSTEM=="block", ACTION=="remove", RUN+="/lib/udev/vl-hot_umount %k ignore udev"
+

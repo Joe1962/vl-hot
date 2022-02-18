@@ -1,0 +1,286 @@
+2009-02-02    <joe1962@users.sourceforge.net>
+
+	* BUG: Modified vl-hot_functions to grep only 1 line when getting user for notification popup.
+
+2008-12-19    <joe1962@users.sourceforge.net>
+
+	* Redesigned vl-hot-config, versioned as 2.1.0.
+
+2008-12-13    <joe1962@users.sourceforge.net>
+
+	* Released 2.0.0.
+
+2008-12-13    <joe1962@users.sourceforge.net>
+
+	* Fixed application path when calling with kdesu/gksu.
+	* Removed remaining vsuper from .desktop files.
+	* Added new unmount icon by nightflier.
+	* Fixed vl-hot-config dialog filters for selecting icon and sound files.
+
+2008-12-10    <joe1962@users.sourceforge.net>
+
+	* Removed vlhc-launcher.
+	* Restored user check and *su call to vl-hot-config.
+	* Repackaged 1.9.22.
+
+2008-12-10    <joe1962@users.sourceforge.net>
+
+	* Released 1.9.22.
+
+2008-11-10    <joe1962>
+
+	* Changed check for System.User.Name = "root" to System.User.Id = 0.
+	* if System.User.Id <> 0, looks for kdesu or gksu.
+	* If found, executes another instance as root and exits.
+	* Separated user check and *su call to vlhc-launcher gambas2 cli app.
+
+2008-11-08    <joe1962@users.sourceforge.net>
+
+	* Updated TODO.
+
+2008-10-21    <joe1962@users.sourceforge.net>
+
+	* Released 1.9.21
+	* Moved "users" mount option to the start of mount options in vl-hot-functions, so overrides (like "exec") should work.
+
+2008-10-15    <joe1962@users.sourceforge.net>
+
+	* Released 1.9.20
+	* UI fixes
+	* Extensive debugging and refactoring
+	* Rethink of alert and debug messages
+	* Ported to Gambas2
+
+2008-08-13    <joe1962@users.sourceforge.net>
+
+	* Released 1.9.9
+
+2008-07-07    <joe1962@users.sourceforge.net>
+
+	* Released 1.9.0
+
+2007-03-08    <joe1962@users.sourceforge.net>
+
+	* Released 1.0.2
+
+2007-03-08    <joe1962@users.sourceforge.net>
+
+	* Removed codepage and iocharset from FAT12 mount options.
+
+2007-02-07    <joe1962@users.sourceforge.net>
+
+	* Released 1.0.1
+
+2007-02-07    <joe1962@users.sourceforge.net>
+
+	* Replaced notification sounds.
+	* Updated vl-hot-config with Notification tab.
+	* Changed to Aska's new vl-hot-png icon.
+
+2007-02-05    <joe1962@users.sourceforge.net>
+
+	* Moved desktop notification so it happens on a per partition basis.
+
+2007-01-15    <joe1962@users.sourceforge.net>
+
+	* Added & to return from call to sudo for desktop notification.
+
+2007-01-15    <joe1962@users.sourceforge.net>
+
+	* Added desktop notification for unmount and some errors.
+
+2006-12-13    <joe1962@users.sourceforge.net>
+
+	* Released 1.0.0 (simple version bump)
+
+2006-11-14    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.7.1
+
+2006-11-14    <joe1962@users.sourceforge.net>
+
+	* vl-hot_mount: checks for mounted mountpoint after mount, if not found does not create desktop icons.
+	* vl-hot_umount: checks for mounted mountpoint after umount, if not found deletes unused mountpoint and desktop icons.
+	* vl-hot_umount: fixed caller origin bug that left desktop icons when unplugging before unmount.
+
+2006-10-28    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.7.0
+
+2006-10-27    <joe1962@users.sourceforge.net>
+
+	* Disabled "read/write" radio button in vl-hot-config for NTFS (kernel rw mount not working).
+	* Added radio button in vl-hot-config for NTFS-3G rw mounting.
+	* Added NTFS3G variable in vl-hot.conf
+	* Implemented NTFS-3G rw mounting in vl-hot_mount.
+
+2006-10-08    <joe1962@users.sourceforge.net>
+
+	* Fixed vl-hot-config tooltips for NTFS write permissions.
+
+2006-10-02    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.6.3
+
+2006-10-01    <joe1962@users.sourceforge.net>
+
+	* Small detail fixes to vl-hot_mount, vl-hot_umount and vl-hot_functions
+	* Added vlh-umount (wrapper for vl-hot_umount), unmounts all vl-hot partitions from cli
+
+2006-09-04    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.6.2
+	* Released VL-Hot-configurator for 0.3.6.2
+
+2006-09-04    <joe1962@users.sourceforge.net>
+
+	* Modified .vl-hot_functions and vl-hot.conf to use space delimited list for EXCLUDED_DEVICEs and INCLUDED_DEVICEs.
+	* Finished interface for EXCLUDED_DEVICEs and INCLUDED_DEVICEs in VL-Hot-configurator.
+
+2006-09-03    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.6.1
+	* Released VL-Hot-configurator for 0.3.6.1
+
+2006-09-02    <joe1962@users.sourceforge.net>
+
+	* Modified VL-Hot-configurator to use a tabbed interface.
+	* Added non-functional interface for EXCLUDED_DEVICEs and INCLUDED_DEVICEs to VL-Hot-configurator.
+
+2006-09-02    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.6
+	* Released VL-Hot-configurator for 0.3.6
+
+2006-09-01    <joe1962@users.sourceforge.net>
+
+	* Changed more mount options from hard-wired to bash variables.
+	* Moved changed mount options to vl-hot-conf.
+	* Started development of VL-Hot-configurator.
+	* Modified vl-hot.conf to play nice with Gambas settings-file functions.
+
+2006-06-24    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.5.1
+
+2006-06-24    <joe1962@users.sourceforge.net>
+
+	* Fixed case bug in FS type variable.
+
+2006-06-23    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.5
+
+2006-06-23    <joe1962@users.sourceforge.net>
+
+	* Added "NotShowIn=KDE;" to separate unmount icon.
+	* Made all variable names uppercase.
+	* Added unique vl-hot icon by Aska (beta version).
+	* Some cosmetic .desktop file fixes.
+
+2006-06-20    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.4
+
+2006-06-19    <joe1962@users.sourceforge.net>
+
+	* Started test branch for XFCE 4.4 native desktop icons support.
+	* Modified .desktop file for XFCE 4.4 support.
+	* Moved icon to /usr/share/pixmaps.
+	* Removed unmounted icon support.
+	* Added separate unmount icon for each device till actions work in XFCE.
+
+2006-06-16    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.3
+
+2006-06-15    <joe1962@users.sourceforge.net>
+
+	* Removed some more leftover unused variables (hope that's the lot!).
+	* Added checks for the existence of the user's Desktop dir.
+	* Moved user configuration options to /etc/udev/vl-hot.conf.
+	* Merged Kocil's patch for excluded devices.
+
+2006-06-14    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.2
+
+2006-06-13    <joe1962@users.sourceforge.net>
+
+	* Create desktop icon file for every user with a Desktop dir (including root).
+	* Remove redundant code to determine KDE user.
+
+2006-05-21    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.1
+
+2006-05-21    <joe1962@users.sourceforge.net>
+
+	* Using SUBSYSTEM=="block" again, udev.rules mounting rule sucks.
+	* Removed volnum parameter handling (%n).
+	* Extracting volnum from devname (%k).
+	* Fixed mountbase extraction for double digit devices.
+	* Now mounts non-MBR devices again.
+	* Now mounts kernel unknown partitions again.
+	* Should not mount scsi nor sata hdd now.
+	* Established $DIAG to limit feedback (0 = min, 1 = verbose).
+
+2006-05-19    <joe1962@users.sourceforge.net>
+
+	* Using separate BUS== rules (usb, pcmcia, ieee1394) instead of scsi.
+
+2006-04-11    <joe1962@users.sourceforge.net>
+
+	* Released 0.3.0
+
+2006-04-05    <joe1962@users.sourceforge.net>
+
+	* Fixed vol number.
+	* Fixed a [] typo.
+	* Changed scripts from /etc/udev/scripts to /lib/udev.
+	* Fixed all paths inside rules and scripts to /lib/udev.
+
+2006-03-16    <joe1962@users.sourceforge.net>
+
+	* Added iocharset=iso8859-15 to FAT mount options.
+	* Added noatime option to $MOUNTSYNC.
+
+2006-03-10    <joe1962@users.sourceforge.net>
+
+	* TODO added for fixing FS mount options and unmount drive action.
+
+2006-02-28    <joe1962@users.sourceforge.net>
+
+	* Removed lock file management (was left-over from hotplug days).
+	* Fixed BUG #1440626 (Wrong umount command for non-MBR devices).
+	* Released 0.2.3
+
+2006-01-12    <joe1962@users.sourceforge.net>
+
+	* Fixed 2 more parameter passing code ugliness (not bugs).
+	* Added license headers to the scripts and udev rules.
+	* Released 0.2.2
+
+2006-01-02    <joe1962@users.sourceforge.net>
+
+	* Better partition type handling for base MBR device (i.e.: /dev/sda).
+	* Generic mount attempt for unexpected or UNKNOWN partition types.
+	* Default is now cached drive access, so remember to unmount!
+	* Command "sync" added before umount.
+	* Lazy umount option removed, was forcing device letter increment (sda, sdb, etc).
+	* Fix to volume number parameter passing to avoid umount error for non MBR devices (i.e./dev/sda).
+	* Package now installs documentation (.txt) to /usr/doc/VL-Hot.
+	* Released 0.2.1
+
+2006-01-01    <joe1962@users.sourceforge.net>
+
+	* Fixed executable property for scripts (forgot before due to hurry!).
+	* Unmount actions now in top-level context menu of desktop icon.
+	* Unmount actions remove desktop icon if succesful.
+	* Released 0.2
+
+2005-12-05    <joe1962@users.sourceforge.net>
+
+	* Switched to udev-only, no more hotplug.
+	* Released 0.1 (first release)
+

@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# (c) Vector Linux, 2005
+# Part of VL-Hot by Joe1962
+# Licensed under the GPL v2
+#
+# vl-hot release 2.0.0
+#
+
+
+# Include configuration file:
+. /etc/udev/vl-hot.conf
+
+# Include support functions file:
+. /lib/udev/vl-hot_functions
+
+
+#**************************************************************************
+# MAIN:
+#**************************************************************************
+if [ "$(id -un)" != "root" ]
+then
+	exec $SUDO $0 "$@"
+	exit
+fi
+
+feedback "Starting vl-hot_umount..."
+
+DEVNAME=$1
+[ $DIAG = "1" ] && feedback "Device is: $DEVNAME"
+
+MOUNTPOINT=$2
+[ $DIAG = "1" ] && feedback "Mountpoint is: $MOUNTPOINT"
+MOUNTNAME=${MOUNTPOINT##*/}
+[ $DIAG = "1" ] && feedback "Mountname is: $MOUNTNAME"
+
+SOURCE=$3	# desktopicon, udev.
+[ $DIAG = "1" ] && feedback "Source is: $SOURCE"
+
+if [ $SOURCE = "udev" ]
+then
+	UMOUNTPOINT="/dev/"$DEVNAME
+else
+	UMOUNTPOINT=$MOUNTPOINT
+fi
+
+UMOUNTTYPE=$4
+
+# Check if mountname in use:
+MOUNTED=`mount | grep -c $UMOUNTPOINT`
+if [ $MOUNTED = "0" ]; then
+	feedback "ALERT: $UMOUNTPOINT not mounted..."
+	rmdir $UMOUNTPOINT
+	delDesktopIcon
+else
+	if [ $UMOUNTTYPE = "unmountsignal" ]
+	then
+		fuser -k -HUP -m $UMOUNTPOINT
+	elif [ $UMOUNTTYPE = "unmountkill" ]
+	then
+		fuser -k -KILL -m $UMOUNTPOINT
+	fi
+	feedback "Umounting $UMOUNTPOINT"
+	# Save cached data:
+	sync
+	# Unmounting:
+	if umount $UMOUNT_OPTIONS $UMOUNTPOINT
+	then
+		delDesktopIcon
+		feedback "Removing $UMOUNTPOINT"
+		rmdir $UMOUNTPOINT
+		if [ $SOURCE = "desktopicon" ]
+		then
+			NOT_CRIT="Normal"
+			NOT_TIME="10000"
+			NOT_CATG="device.removed"
+			NOT_SUMM="VL-Hot unmount notification"
+#			NOT_MESS="$DEVNAME is now safely unmounted..."
+			NOT_MESS="Device $MOUNTNAME was safely unmounted..."
+			NOT_SND=$SND_SUCCESS
+			fnotify
+		fi
+	else
+		feedback "ERROR: unmounting of $UMOUNTPOINT failed"
+		if [ $SOURCE = "desktopicon" ]
+		then
+			NOT_CRIT="Critical"
+			NOT_TIME="10000"
+			NOT_CATG="device.error"
+			NOT_SUMM="VL-Hot unmount notification"
+			NOT_MESS="ERROR unmounting device $MOUNTNAME"
+			NOT_SND=$SND_ERROR
+			fnotify
+		fi
+	fi
+fi
+
+feedback "Finishing vl-umount..."
+#**************************************************************************

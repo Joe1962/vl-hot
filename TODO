@@ -1,0 +1,18 @@
+TODO - Packaging (SlackBuild) script.
+TODO - Source tarball creation script.
+TODO - Better custom mount name GUI.
+TODO - Unmount drive (all partitions) wrapper action in desktop icon's context menu.
+TODO - Optionally launch a file manager on the mount path???
+TODO - Create a man page?
+
+DONE - Create a drive dir for each drive (within the mount base) to contain all the partitions of the drive.
+DONE - Create / remove KDE desktop icons.
+DONE - Find a fix or workaround for user names longer than 8 characters. (Workaround for KDE only).
+DONE - Set up Unmount actions in desktop icon's context menu.
+DONE - Properly check for umount success by grepping "mount" for device name or mountpoit.
+DONE - Check for mounted device before umounting.
+DONE - Check and fix mount options for all FS types.
+DONE - Create remove desktop icons for other WMs (XFCE 4.4).
+DONE - Unmount drive (all partitions) wrapper script.
+DONE - Add desktop notifications through libnotify (notify-send) and notification-daemon.
+DONE - Add sound alert on safe unmount and errors, through play.

@@ -1,0 +1,167 @@
+#!/bin/bash
+#
+# (c) Vector Linux, 2005
+# Part of VL-Hot by Joe1962
+# Licensed under the GPL v2
+#
+# vl-hot release 2.0.0
+#
+
+
+# Include configuration file:
+. /etc/udev/vl-hot.conf
+
+# Include support functions file:
+. /lib/udev/vl-hot_functions
+
+
+#**************************************************************************
+# MAIN:
+#**************************************************************************
+if [ "$(id -un)" != "root" ] ; then
+	exec $SUDO $0 "$@"
+	exit
+fi
+
+feedback "Starting vl-hot_mount..."
+
+# Get device filename and volume number:
+DEVNAME=$1
+MOUNTDEV=$HOTLINKS_PATH/$DEVNAME
+
+# do not mount if the device is excluded (Submitted by Kocil):
+if is_excluded $DEVNAME ; then
+    feedback "ALERT: Device $DEVNAME is excluded, not mounted..."
+    exit 0
+fi
+
+# Go mount:
+[ $DIAG = "1" ] && feedback "Mounting device $DEVNAME"
+# Get filesystem type:
+PARTMAPCHECK=`$DISKTYPE $MOUNTDEV | awk ' /partition/ { print $1 }'`
+if [ -z $PARTMAPCHECK ] ; then
+	FSTYPE=`$DISKTYPE $MOUNTDEV | awk ' /file system/ { print $1 }'`
+	if [ -z $FSTYPE ] ; then
+		feedback "ALERT: $MOUNTDEV not mountable (Undetermined filesystem)..."
+	elif [ $FSTYPE = "UNKNOWN" ] ; then
+		feedback "ALERT: $MOUNTDEV not mountable (Unknown filesystem)..."
+	else
+		if [ $DIAG = "1" ] ; then
+			feedback "$MOUNTDEV filesystem is $FSTYPE"
+		fi
+		chooseMountOptions
+
+		# Get device information:
+		#ID_VENDOR=`udevinfo --query=env --name=$MOUNTDEV | awk -F "="  ' /ID_VENDOR/ { print $2 }'`
+		#ID_MODEL=`udevinfo --query=env --name=$MOUNTDEV | awk -F "="  ' /ID_MODEL/ { print $2 }'`
+		#ID_REVISION=`udevinfo --query=env --name=$MOUNTDEV | awk -F "="  ' /ID_REVISION/ { print $2 }'`
+		#ID_TYPE=`udevinfo --query=env --name=$MOUNTDEV | awk -F "="  ' /ID_TYPE/ { print $2 }'`
+		#ID_SERIAL=`udevinfo --query=env --name=$MOUNTDEV | awk -F "[=-]"  ' /ID_SERIAL=/ { print $2 }'`
+		ID_SERIAL_SHORT=`udevinfo --query=env --name=$MOUNTDEV | awk -F "="  ' /ID_SERIAL_SHORT/ { print $2 }'`
+		# Feedback device information:
+		#[ "$DIAG" = "1" ] && feedback "VENDOR: "$ID_VENDOR
+		#[ "$DIAG" = "1" ] && feedback "MODEL: "$ID_MODEL
+		#[ "$DIAG" = "1" ] && feedback "REVISION: "$ID_REVISION
+		#[ "$DIAG" = "1" ] && feedback "TYPE: "$ID_TYPE
+		#[ "$DIAG" = "1" ] && feedback "SERIAL: "$ID_SERIAL
+		[ "$DIAG" = "1" ] && feedback "Device serial number: "$ID_SERIAL_SHORT
+
+		# Lookup device serial number in vl-hot_names.conf, get saved device name:
+		SDEVNAME=`grep --word-regexp --max-count=1 $ID_SERIAL_SHORT /etc/udev/vl-hot_names.conf`
+		# Clean up saved device name:
+		SDEVNAME=${SDEVNAME#$ID_SERIAL_SHORT=}
+		SDEVNAME=${SDEVNAME#\"}
+		SDEVNAME=${SDEVNAME%\"}
+		# Check for zero-length saved device name:
+		if [ -z ${SDEVNAME} ] ; then
+			# Get device volume label:
+			VLABEL=`/sbin/vol_id --label $MOUNTDEV`
+			[ "$DIAG" = "1" ] && feedback "VOLUME LABEL: "$VLABEL
+			# Check for zero-length volume label:
+			if [ -z ${VLABEL} ] ; then
+				# Use default device name for mountpoint:
+				[ "$DIAG" = "1" ] && feedback "Using default mountpoint: vl-hot"
+				MOUNTNAME="vl-hot"
+			else
+				# Use device volume label for mountpoint:
+				[ "$DIAG" = "1" ] && feedback "Using device volume label as mountpoint: "$VLABEL
+				MOUNTNAME=$VLABEL
+			fi
+		else
+			# Use saved device name for mountpoint:
+			[ "$DIAG" = "1" ] && feedback "Using saved device name as mountpoint: "$SDEVNAME
+			MOUNTNAME=$SDEVNAME
+		fi
+
+		# Check if mountname already mounted:
+		[ "$DIAG" = "1" ] && feedback "Checking if $MOUNTNAME already used..."
+		MCOUNTER=""
+		MOUNTED=1
+		until [ $MOUNTED = "0" ]; do
+			MOUNTED=`mount | grep -c $MOUNTNAME`
+			if [ $MOUNTED != "0" ]; then
+				[ "$DIAG" = "1" ] && feedback "ALERT: Mountpoint $MOUNTNAME is in use..."
+				# Increase mountname counter:
+				(( MCOUNTER += 1))
+				# Rename mountname:
+				MOUNTNAME=$MOUNTNAME$MCOUNTER
+			else
+				[ "$DIAG" = "1" ] && feedback "Mountpoint $MOUNTNAME is available..."
+			fi
+		done
+
+		# Check if mountpoint exists:
+		MOUNTPOINT=$MOUNT_PATH"/"$MOUNTNAME
+		if [ -d $MOUNTPOINT ] ; then
+			# Mountpoint exists:
+			[ "$DIAG" = "1" ] && feedback "Mountpoint $MOUNTPOINT exists..."
+		else
+			# Create mountpoint:
+			[ "$DIAG" = "1" ] && feedback "Creating mountpoint $MOUNTPOINT"
+			mkdir -p $MOUNTPOINT
+		fi
+
+		# Process mount options:
+		if [ $MOUNT_OPTIONS = "UNKNOWN" ]
+		then
+			feedback "ALERT: attempting to mount unplanned $FSTYPE filesystem $MOUNTDEV on $MOUNTPOINT"
+			[ "$DIAG" = "1" ] && feedback "Command: mount -t "$FSMOUNTTYPEARG -o defaults $MOUNTDEV $MOUNTPOINT
+			mount "-t" $FSMOUNTTYPEARG -o defaults $MOUNTDEV $MOUNTPOINT
+		else
+			if [ $FSTYPE = "NTFS" ] ; then
+				# Check for NTFS mount by NTFS-3G:
+				if [ $NTFS3G = "1" ] ; then
+					# Check for forced NTFS-3G mount on unclean FS:
+					if [ $NTFS3GFORCE = "1" ] ; then
+						feedback "Mounting (forced) NTFS-3G filesystem $MOUNTDEV on $MOUNTPOINT"
+						[ "$DIAG" = "1" ] && feedback "Command: ntfs-3g $MOUNTDEV $MOUNTPOINT $MOUNT_OPTIONS,force"
+						ntfs-3g $MOUNTDEV $MOUNTPOINT $MOUNT_OPTIONS",force"
+					else
+						feedback "Mounting NTFS-3G filesystem $MOUNTDEV on $MOUNTPOINT"
+						[ "$DIAG" = "1" ] && feedback "Command: ntfs-3g $MOUNTDEV $MOUNTPOINT $MOUNT_OPTIONS"
+						ntfs-3g $MOUNTDEV $MOUNTPOINT $MOUNT_OPTIONS
+					fi
+				else
+					feedback "Mounting $FSTYPE filesystem $MOUNTDEV on $MOUNTPOINT"
+					[ "$DIAG" = "1" ] && feedback "Command: mount -t "$FSMOUNTTYPEARG $MOUNT_OPTIONS $MOUNTDEV $MOUNTPOINT
+					mount "-t" $FSMOUNTTYPEARG $MOUNT_OPTIONS $MOUNTDEV $MOUNTPOINT
+				fi
+			else
+				feedback "Mounting $FSTYPE filesystem $MOUNTDEV on $MOUNTPOINT"
+				[ "$DIAG" = "1" ] && feedback "Command: mount -t "$FSMOUNTTYPEARG $MOUNT_OPTIONS $MOUNTDEV $MOUNTPOINT
+				mount "-t" $FSMOUNTTYPEARG $MOUNT_OPTIONS $MOUNTDEV $MOUNTPOINT
+			fi
+		fi
+		if [ $(mount | grep -c $MOUNTPOINT) = "0" ] ; then
+			feedback "ERROR: mounting of $MOUNTDEV on $MOUNTPOINT failed..."
+		else
+			[ "$ICON_SHOW" = "1" ] && showDesktopIcon
+		fi
+	fi
+else
+	feedback "ALERT: $MOUNTDEV not mountable (MBR)..."
+fi
+
+
+feedback "Finishing vl-hot_mount..."
+#**************************************************************************

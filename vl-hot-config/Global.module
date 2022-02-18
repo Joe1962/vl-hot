@@ -1,0 +1,95 @@
+' Gambas module file
+
+PUBLIC CONST INI_PATH AS String = "/etc/udev/vl-hot.conf"
+PUBLIC CONST VL_HOT_RELEASE AS String = "2.0.0"
+PUBLIC CONST charset_path AS String = "/usr/share/i18n/charmaps"
+PUBLIC CONST PathNLSBase AS String = "/lib/modules/"
+PUBLIC CONST PathNLSTail AS String = "/kernel/fs/nls/"
+
+PUBLIC reading AS Boolean
+PUBLIC firstchange AS Boolean
+
+
+PUBLIC FUNCTION ReadIni(IniKey AS String, DefaultValue AS Variant) AS Variant
+DIM hSettings AS Settings
+DIM retVal AS Variant
+
+
+hSettings = NEW Settings(Global.INI_PATH)
+'hSettings = NEW Settings(Global.INI_PATH)
+retVal = hSettings[IniKey, DefaultValue]
+RETURN retVal
+
+END
+
+PUBLIC SUB WriteIni(IniKey AS String, SetValue AS Variant)
+DIM hSettings AS Settings
+
+hSettings = NEW Settings(Global.INI_PATH)
+hSettings[IniKey] = SetValue
+
+END
+
+PUBLIC FUNCTION GetFile(initFile AS String, filetype AS String) AS String
+'File selection dialog:
+
+Dialog.Title = "Choose a file"
+
+SELECT CASE filetype
+CASE "icons"
+   Dialog.Filter = ["*.png;*.jpg;*.jpeg;*.svg", "Icon files"]
+   '["Icon files (*.png; *.jpg; *.jpeg; *.bmp)", "All files (*.*)"]
+CASE "sounds"
+   Dialog.Filter = ["*.ogg; *.mp3; *.wav", "Sound files"]
+CASE "exec"
+END SELECT
+
+Dialog.path = initFile
+IF Dialog.openfile() = FALSE THEN
+   RETURN Dialog.path
+ELSE
+   RETURN initFile
+ENDIF
+
+END
+
+PUBLIC FUNCTION GetDir(initPath AS String) AS String
+'File selection dialog:
+
+Dialog.path = initPath
+IF Dialog.SelectDirectory() = FALSE THEN
+   RETURN Dialog.path
+ELSE
+   RETURN initPath
+ENDIF
+
+END
+
+PUBLIC FUNCTION ValidatePath(pathname AS String) AS Boolean
+IF IsDir(pathname) THEN 
+   RETURN TRUE
+ELSE
+   RETURN FALSE
+ENDIF
+END
+
+PUBLIC FUNCTION ValidateFile(filename AS String) AS Boolean
+IF Exist(filename) THEN
+   RETURN TRUE
+ELSE
+   RETURN FALSE
+ENDIF
+END
+
+PUBLIC SUB Changed()
+IF Global.firstchange = TRUE
+   IF Global.reading = FALSE THEN Global.firstchange = FALSE
+ELSE
+   IF Global.reading = FALSE THEN
+      FMain.butSave.Enabled = TRUE
+      FMain.butUndo.Enabled = TRUE
+   ENDIF
+ENDIF
+END
+
+
